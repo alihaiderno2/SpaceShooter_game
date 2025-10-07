@@ -1,5 +1,8 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <iostream>
+#include <thread>//for delay in  sounds
+#include <chrono>
 using namespace sf;
 using namespace std;
 // Data
@@ -70,6 +73,8 @@ struct Bullet{
     float spawnInterval = 2.0f;  // spawn a new enemy every 2 seconds initially
     Clock fireClock;
     float fireInterval = 0.3f;
+    Clock gameClock;
+    Clock soundClock;
 // Global Enemy List
     vector<Enemy1> enemies;
 // Global Bullet List
@@ -140,6 +145,20 @@ bool Mainmenu(bool gamestarted)
 // Game Logic
 int game(bool gameStarted)
 {
+    //loading sound from file (BUllets)
+     SoundBuffer bufferBullet;
+    if (!bufferBullet.loadFromFile("assets/shoot.wav")) {
+        std::cout << "Error: Could not load sound.wav\n";
+        return -1;
+    }
+
+   Sound soundBullet;
+    soundBullet.setBuffer(bufferBullet);
+
+    // Optional: set volume and pitch
+    soundBullet.setVolume(50);
+    soundBullet.setPitch(0.6f);
+
     VideoMode desktop = VideoMode::getDesktopMode();
     int centerw = desktop.width / 2;
     int centerh = desktop.height / 2 - 30;
@@ -264,9 +283,16 @@ int game(bool gameStarted)
                     i--;
                 }
             }
+                 float  delay=0.4f;
+            if (soundClock.getElapsedTime().asSeconds() >= delay) {
+            soundBullet.play();
+            soundClock.restart(); // reset timer for next interval
+        }
 
-
+        // optional small sleep to prevent 100% CPU usage
+        sf::sleep(sf::milliseconds(5));
             gameWindow.draw(player);
+              
             gameWindow.display();
         }
     }

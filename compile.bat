@@ -1,4 +1,8 @@
 @echo off
-C:\msys64\mingw64\bin\g++ main.cpp -std=c++17 -IC:/msys64/mingw64/include -LC:/msys64/mingw64/lib -o main.exe -lsfml-graphics -lsfml-window -lsfml-system
-main.exe
+C:/msys64/mingw64/bin/g++.exe -std=c++17 -g main.cpp ^
+-I C:/msys64/mingw64/include ^
+-L C:/msys64/mingw64/lib ^
+-lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio ^
+-o main.exe
+
 pause
