@@ -55,11 +55,10 @@ struct Enemy1
     bool collision = false;
 
     // Loader of the enemy
-    Enemy1(Texture &texture, float scale = 0.3f, float speedValue = 100.0f)
+    Enemy1(Texture &texture, float scale = 0.3f, float speedValue = 200.0f)
     {
         sprite.setTexture(texture);
         sprite.setScale(scale, scale);
-        sprite.setColor(Color(150, 150, 255));
         speed = speedValue;
     }
 
@@ -86,8 +85,9 @@ struct Enemy1
         return (sprite.getPosition().y + sprite.getGlobalBounds().height < 0) || collision;
     }
     // For setting collision
-    void setCollision(){
-        collision=true;
+    void setCollision()
+    {
+        collision = true;
     }
     // gets bounds of sprite /its postion
     FloatRect getBounds() const
@@ -104,7 +104,7 @@ struct Bullet
     float speed;
 
     // Loader of the bullet
-    Bullet(Texture &texture, float speedValue = 400.0f)
+    Bullet(Texture &texture, float speedValue = 900.0f)
     {
         sprite.setTexture(texture);
         sprite.setScale(0.055f, 0.055f);
@@ -138,7 +138,7 @@ struct Bullet
         return sprite.getGlobalBounds();
     }
 };
-//Explosion Struct
+// Explosion Struct
 struct Explosion
 {
     Texture texture;
@@ -162,7 +162,8 @@ Clock spawnClock;           // used to track time since last enemy spawn
 float spawnInterval = 2.0f; // spawn a new enemy every 2 seconds initially
 Clock spawnClock1;
 Clock fireClock;
-float fireInterval = 0.25f;
+float spawnIntervalEnemy2 = 20.0f;
+float fireInterval = 0.18f;
 Clock gameClock;
 Clock soundClock;
 // Global Enemy List
@@ -176,7 +177,7 @@ vector<Explosion> explosions;
 // Score variable
 int score = 0;
 // Enemies going past variable
-int past=0;
+int past = 0;
 // High Score variable
 int highScore = 0;
 // Function Declarations
@@ -184,6 +185,7 @@ int Mainmenu(bool gamestarted);
 int game(bool gameStarted);
 void checkCollisions(vector<Bullet> &bullets,
                      vector<Enemy1> &enemies,
+                     vector<Enemy1> &enemies1,
                      Sprite &player,
                      bool &gameOver,
                      Texture &explosionTexture, VideoMode desktop = VideoMode::getDesktopMode());
@@ -210,11 +212,12 @@ int main()
     {
         cout << "";
     }
-    if(score>highScore){
-        highScore=score;
+    if (score > highScore)
+    {
+        highScore = score;
         ofstream fout;
         fout.open("assets/highScore.txt");
-        fout<<highScore;
+        fout << highScore;
         fout.close();
     }
     return 0;
@@ -304,7 +307,8 @@ int game(bool gameStarted)
     }
 
     SoundBuffer bufferExplosion;
-    if(!bufferExplosion.loadFromFile("assets/invaderkilled.wav")){
+    if (!bufferExplosion.loadFromFile("assets/invaderkilled.wav"))
+    {
         cout << "Error: Could not load sound.wav\n";
         return -1;
     }
@@ -347,7 +351,7 @@ int game(bool gameStarted)
         Sprite player(shipTexture);
         player.setScale(0.2f, 0.2f);
         player.setPosition(desktop.width - centerw - player.getGlobalBounds().width, desktop.height - (centerh / 2));
-        player.setColor(Color(200,200,255));
+        player.setColor(Color(200, 200, 255));
 
         Texture bulletTexture;
         if (!bulletTexture.loadFromFile("assets/bullet.png"))
@@ -414,7 +418,7 @@ int game(bool gameStarted)
             // Bullets Loading condition
             if (fireClock.getElapsedTime().asSeconds() > fireInterval)
             {
-                Bullet newBullet(bulletTexture, 600.0f);
+                Bullet newBullet(bulletTexture, 800.0f);
                 newBullet.setPosition(
                     player.getPosition().x + player.getGlobalBounds().width / 2 - newBullet.sprite.getGlobalBounds().width / 2,
                     player.getPosition().y);
@@ -435,38 +439,43 @@ int game(bool gameStarted)
             }
             //  Enemy 2 Texture
             Texture enemy2Texture;
-            if(!enemy2Texture.loadFromFile("assets/enemy2.png")){
+            if (!enemy2Texture.loadFromFile("assets/enemy2.png"))
+            {
                 cout << "Error loading enemy texture!\n";
             }
             // random spawn enemies
-            if(spawnClock.getElapsedTime().asSeconds() > spawnInterval)
+            if (spawnClock.getElapsedTime().asSeconds() > spawnInterval)
             {
                 Enemy1 newEnemy(enemyTexture, 0.3f, 150.0f);
-                int margin=250;
-                newEnemy.setPosition(margin + rand() % (desktop.width-2*margin), 0);
+                int margin = 250;
+                newEnemy.setPosition(margin + rand() % (desktop.width - 2 * margin), 0);
                 enemies.push_back(newEnemy);
                 spawnClock.restart();
             }
             // random spawn enemies 2
-            if(score>150){
-                if(spawnClock1.getElapsedTime().asSeconds()> spawnInterval){
-                Enemy1 newEnemy1(enemy2Texture, 0.4f, 200.0f);
-                int margin=200;
-                newEnemy1.setPosition(margin + rand() % (desktop.width-2*margin),0);
-                enemies1.push_back(newEnemy1);
-                spawnClock1.restart();
+            // if(score>150){
+            if (score > 150)
+            {
+                if (spawnClock1.getElapsedTime().asSeconds() > spawnIntervalEnemy2)
+                {
+                    Enemy1 newEnemy1(enemy2Texture, 0.5f, 50.0f);
+                    int margin = 200;
+                    newEnemy1.setPosition(margin + rand() % (desktop.width - 2 * margin), 0);
+                    enemies1.push_back(newEnemy1);
+                    spawnClock1.restart();
                 }
 
                 // Update & draw all new heavy enemies1
-                for(auto &e: enemies1){
+                for (auto &e : enemies1)
+                {
                     e.update(dt);
                     e.draw(gameWindow);
                 }
             }
-            
 
             // Update & draw all
-            for(auto &e : enemies){
+            for (auto &e : enemies)
+            {
                 e.update(dt);
                 e.draw(gameWindow);
             }
@@ -480,19 +489,20 @@ int game(bool gameStarted)
                     i--;
                 }
             }
-            
 
             // Loading Explosion Texture
             Texture explosionTexture;
-            if (!explosionTexture.loadFromFile("assets/explosion.png")) {
+            if (!explosionTexture.loadFromFile("assets/explosion.png"))
+            {
                 cout << "Failed to load explosion.png\n";
             }
             // Collision Detection
             bool gameOver = false;
-            checkCollisions(bullets, enemies, player, gameOver,explosionTexture);
+            checkCollisions(bullets, enemies, enemies1, player, gameOver, explosionTexture);
             // Draw Explosions
             // --- Update explosions ---
-            for (auto it = explosions.begin(); it != explosions.end();) {
+            for (auto it = explosions.begin(); it != explosions.end();)
+            {
                 soundExplosion.play();
                 if (it->isExpired(dt))
                     it = explosions.erase(it);
@@ -501,10 +511,10 @@ int game(bool gameStarted)
             }
 
             // --- Draw explosions ---
-            for (auto &ex : explosions){
+            for (auto &ex : explosions)
+            {
                 gameWindow.draw(ex.sprite);
             }
-
 
             /// game over ka text
             Font gameOverFont;
@@ -546,13 +556,18 @@ int game(bool gameStarted)
             scoreText.setString("Score: " + to_string(score));
             gameWindow.draw(scoreText);
             gameWindow.display();
-            if(past>=3){
-                gameOver=true;
+            if (past >= 3)
+            {
+                gameOver = true;
             }
             if (gameOver)
             {
 
                 for (auto &enemy : enemies)
+                {
+                    enemy.speed = 0;
+                }
+                for (auto &enemy : enemies1)
                 {
                     enemy.speed = 0;
                 }
@@ -591,11 +606,11 @@ int game(bool gameStarted)
 }
 void checkCollisions(vector<Bullet> &bullets,
                      vector<Enemy1> &enemies,
+                     vector<Enemy1> &enemies1,
                      Sprite &player,
                      bool &gameOver,
                      Texture &explosionTexture, VideoMode desktop)
 {
-    
     // --- Bullet vs Enemy ---
     // trying collision
     for (auto b = bullets.begin(); b != bullets.end();)
@@ -617,13 +632,30 @@ void checkCollisions(vector<Bullet> &bullets,
                 ++e;
             }
         }
+        // Enemy1 vs bullets
+        for (auto e1 = enemies1.begin(); e1 != enemies1.end();)
+        {
+            if (b->getBounds().intersects(e1->getBounds()))
+            {
+                explosions.emplace_back(explosionTexture, e1->sprite.getPosition());
+                e1 = enemies1.erase(e1);
+                b = bullets.erase(b);
+                score += 20;
+                collision = true;
+                break;
+            }
+            else
+            {
+                ++e1;
+            }
+        }
         if (!collision)
         {
             ++b;
         }
     }
 
-    // --- Ship vs Enemy ---
+    // --- Ship vs Enemy1 ---
     // --- Ship vs Screen bottom ---
     for (auto e = enemies.begin(); e != enemies.end();)
     {
@@ -645,12 +677,33 @@ void checkCollisions(vector<Bullet> &bullets,
             ++e;
         }
     }
+    for (auto e = enemies1.begin(); e != enemies1.end();)
+    {
+        // Player collision with the enemy2
+        if (player.getGlobalBounds().intersects(e->getBounds()))
+        {
+            gameOver = true;
+            break;
+        }
+
+        // If enemy2 goes offscreen
+        if (e->sprite.getPosition().y > desktop.height)
+        {
+            gameOver = true;
+        }
+        else
+        {
+            ++e;
+        }
+    }
 }
-void High_score(){
+void High_score()
+{
     ifstream fin;
     fin.open("highScore.txt");
-    if(!fin.is_open()){
-        fin>>highScore;
+    if (!fin.is_open())
+    {
+        fin >> highScore;
     }
-    return ;
+    return;
 }
